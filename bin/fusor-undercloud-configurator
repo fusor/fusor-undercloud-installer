@@ -1,4 +1,18 @@
 #!/usr/bin/python
+#
+# Copyright (c) 2008,2009 Red Hat, Inc.
+#
+# This software is licensed to you under the GNU General Public License,
+# version 2 (GPLv2). There is NO WARRANTY for this software, express or
+# implied, including the implied warranties of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. You should have received a copy of GPLv2
+# along with this software; if not, see
+# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
+#
+# Red Hat trademarks are not licensed under GPLv2. No permission is
+# granted to use or replicate Red Hat trademarks that are incorporated
+# in this software or its documentation.
+#
 import netifaces as ni
 import fcntl
 import ipaddress
@@ -9,6 +23,37 @@ import struct
 import sys
 import yaml
 
+# Check if we are using an answer file or not as specified in the parent script
+conf_file = os.environ.get('CONF_FILE')
+
+
+def prompt(msg, def_val, validators=[]):
+    """
+    Prompt the user with a message. If not given use def_val, then validate
+    using the given validators.
+    msg - Message to show the user
+    def_val - default value if user does not enter one
+    validators - array of Validator classes.
+    """
+    valid = False
+    value = None
+    while not valid:
+        value = raw_input("\n" + msg % def_val)
+
+        if value:
+            for v in validators:
+                if not v.validate(value):
+                    print v.msg
+                    valid = False
+                    break
+        else:
+            # tried doing this without the else but then valid was always set to
+            # True since these 2 lines would always run. It was easier to keep
+            # them in the else block.
+            value = def_val
+            valid = True
+
+    return value
 
 def get_hw_addr(ifname):
     """
@@ -470,3 +515,12 @@ f = open('/tmp/network.tmp', 'w')
 f.write("GATEWAY=%s" % gateway)
 f.close
 os.system('sudo mv /tmp/network.tmp /etc/sysconfig/network')
+
+#
+# MAIN
+#
+if __name__ == "__main__":
+    try:
+        Configurator().main(sys.argv[1:])
+    except KeyboardInterrupt:
+        pass
