@@ -119,6 +119,8 @@ enabled=1" > /etc/yum.repos.d/fake.repo
       HOST=`grep ^hostname $CONF_FILE | awk '{print $2}'`
     fi
 
+    # remove leading and trailing whitespaces from HOST
+    HOST="$(echo -e "${HOST}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
     if [[ `echo $HOST | grep -P $ValidHostnameRegex` ]]
     then
       echo "Hostname is in valid format, setting hostname"
@@ -155,6 +157,9 @@ enabled=1" > /etc/yum.repos.d/fake.repo
     else
       NAMESERVER=`grep ^nameserver $CONF_FILE | awk '{print $2}'`
     fi
+
+    # remove leading and trailing whitespaces from NAMESERVER
+    NAMESERVER="$(echo -e "${NAMESERVER}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
     if [[ $NAMESERVER =~ $ValidIpAddressRegex ]]
     then
       FailedCheck=false
